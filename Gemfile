@@ -61,6 +61,8 @@ gem "resque"
 
 gem "resque-scheduler", '~> 2.5.5'
 
+gem "redis" 
+
 gem 'mysql'
 
 gem 'mysql2'

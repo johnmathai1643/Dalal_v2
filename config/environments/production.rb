@@ -89,4 +89,7 @@ Rails.application.configure do
 
   # Devise gem config refer Devise documentation
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+
+  ENV["REDISTOGO_URL"] = 'redis://redistogo:cb66cb7aaff9e42780d457e9f2d79a96@tarpon.redistogo.com:11897/'
+
 end
