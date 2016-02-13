@@ -13,17 +13,23 @@ Rails.application.routes.draw do
 
  #get 'dalal_dashboard/index'  remove it later only for development purpose
 
+
+###### API routes ##################################
+  get '/api/lulz' => 'api_lulz#index'
+  get 'api/market_events' => 'api_lulz#get_market_events'
+####################################################
+
   get '/dalal_dashboard/:id' => 'dalal_dashboard#show'
   get '/dalal_dashboard/:id/index' => 'dalal_dashboard#show'
   get '/dalal_dashboard/:id/stock' => 'dalal_dashboard#stock'
-  post '/dalal_dashboard/:id/stock_ajax_handler' => 'dalal_dashboard#stock_ajax_handler'
+ # post '/dalal_dashboard/:id/stock_ajax_handler' => 'dalal_dashboard#stock_ajax_handler'
   get '/dalal_dashboard/:id/market_events' => 'dalal_dashboard#market_events'
   get '/dalal_dashboard/:id/buy_sell_page' => 'dalal_dashboard#buy_sell_page'
-  post '/dalal_dashboard/:id/buy_sell_stock'=> 'dalal_dashboard#buy_sell_stock'
+#  post '/dalal_dashboard/:id/buy_sell_stock'=> 'dalal_dashboard#buy_sell_stock'
   get '/dalal_dashboard/:id/bank_mortgage'=> 'dalal_dashboard#bank_mortgage'
 #  get '/dalal_dashboard/:id/bank_mortgage_stock'=> 'dalal_dashboard#bank_mortgage_stock'
-  post '/dalal_dashboard/:id/bank_mortgage_stock'=> 'dalal_dashboard#bank_mortgage_stock'
-  post '/dalal_dashboard/:id/bank_return_stock'=> 'dalal_dashboard#bank_return_stock'
+#  post '/dalal_dashboard/:id/bank_mortgage_stock'=> 'dalal_dashboard#bank_mortgage_stock'
+#  post '/dalal_dashboard/:id/bank_return_stock'=> 'dalal_dashboard#bank_return_stock'
   get '/dalal_dashboard/:id/company' => 'dalal_dashboard#company'
   get '/dalal_dashboard/:id/buy_sell_history' => 'dalal_dashboard#buy_sell_history'
   get '/dalal_dashboard/:id/leaderboard' => 'dalal_dashboard#leaderboard'

@@ -1,6 +1,6 @@
 # SQLite version 3.x
 #   gem install sqlite3
-#
+
 #   Ensure the SQLite 3 gem is defined in your Gemfile
 #   gem 'sqlite3'
 #
@@ -31,7 +31,7 @@
 development:
   adapter: mysql2
   username: root
-  password: vegeta@1993
+  password: 
   port: 5432
   database: dalalstreet_dev
   encoding: utf8

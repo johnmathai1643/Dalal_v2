@@ -1,0 +1,10 @@
+module ApiLulzHelper
+	def check_credentials!
+		u = User.find_by_email(params[:email])
+		if !u or !u.valid_password?(params[:password])
+			render :text => "not permitted"
+		else
+			@cur_user = u
+		end
+	end
+end

@@ -1,0 +1,5 @@
+class APILulzController < ActionController::Base
+	def index
+		render :text => "Lol. Hi."
+	end
+end

@@ -1,0 +1,21 @@
+class ApiLulzController < ActionController::Base
+	include ApiHelper
+	before_filter :check_credentials!
+	
+	def index
+		render :text => "Hello " + @cur_user.username + " :)"
+	end
+	
+	def get_market_events
+		skip = params[:skip] || 0
+		limit = params[:limit] || 7
+		@market_events_total = MarketEvent.count
+		@market_events_paginate = MarketEvent.order('created_at DESC').limit(limit).offset(skip)
+		
+		render :json => {
+			market_events_total: @market_events_total,
+			market_events_list: @market_events_paginate
+		}
+	end
+	
+end

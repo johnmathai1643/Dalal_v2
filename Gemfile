@@ -55,13 +55,15 @@ gem 'bcrypt', '~> 3.1.7'
 gem 'websocket-rails', :git=> 'https://github.com/websocket-rails/websocket-rails.git', :branch=> 'master'
 # gem 'websocket-rails'
 
+gem 'faye-websocket', '0.10.0'
+
 gem "resque"
 
 gem "resque-scheduler", '~> 2.5.5'
 
 gem 'mysql'
 
-gem 'mysql2'
+gem 'mysql2', '~> 0.3.18'
 
 # Use unicorn as the app server
 # gem 'unicorn'

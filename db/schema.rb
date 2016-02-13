@@ -16,7 +16,7 @@ ActiveRecord::Schema.define(version: 20150223112939) do
   create_table "banks", force: true do |t|
     t.integer  "user_id"
     t.integer  "stock_id"
-    t.decimal  "pricerendered", precision: 10, scale: 0
+    t.decimal  "pricerendered"
     t.integer  "numofstock"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -25,7 +25,7 @@ ActiveRecord::Schema.define(version: 20150223112939) do
   create_table "buys", force: true do |t|
     t.integer  "user_id"
     t.integer  "stock_id"
-    t.decimal  "price",      precision: 10, scale: 0
+    t.decimal  "price"
     t.integer  "numofstock"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -68,7 +68,7 @@ ActiveRecord::Schema.define(version: 20150223112939) do
   create_table "sells", force: true do |t|
     t.integer  "user_id"
     t.integer  "stock_id"
-    t.decimal  "priceexpected", precision: 10, scale: 0
+    t.decimal  "priceexpected"
     t.integer  "numofstock"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -112,10 +112,10 @@ ActiveRecord::Schema.define(version: 20150223112939) do
     t.integer  "status"
     t.string   "username"
     t.decimal  "cash",                   precision: 8, scale: 3, default: 10000.0, null: false
-    t.decimal  "total",                  precision: 8, scale: 3
+    t.decimal  "total",                  precision: 8, scale: 3, default: 10000.0, null: false
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
-  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
+  add_index "users", ["email"], name: "index_users_on_email", unique: true
+  add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
 
 end

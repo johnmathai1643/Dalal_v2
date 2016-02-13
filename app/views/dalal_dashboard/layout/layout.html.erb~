@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dalal Street</title>
+
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track' => true%>
+    <%= csrf_meta_tags %>
+
+<script>
+        var limit="15:00";
+
+        if (document.images){
+        var parselimit=limit.split(":");
+        parselimit=parselimit[0]*60+parselimit[1]*1;
+        }
+        
+        function beginrefresh(){
+        if (!document.images)
+        return
+        if (parselimit==1)
+        window.location.reload()
+        else{ 
+        parselimit-=1;
+        curmin=Math.floor(parselimit/60);
+        cursec=parselimit%60;
+        if (curmin!=0)
+        {curtime=curmin+":"+cursec;
+          if (cursec <= 9)
+           curtime=curmin+":0"+cursec;
+        }
+        else
+          {if(cursec >= 10)  
+           curtime="0:"+cursec;
+           else
+           curtime="0:0"+cursec;
+         }
+        window.status=curtime
+
+        $("#timer").html( curtime );
+        setTimeout("beginrefresh()",1000)
+        }
+        }
+
+        window.onload=beginrefresh
+</script>
+
+
+</head>
+
+<body>
+
+ <div id="wrapper">
+
+ <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'show' do %>
+                <span class="navbar-brand" style="color:#fff;"><b>DALAL STREET</b></span>
+                <% end %>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li class="dropdown">
+                 <a>Refresh Time:</a>
+                </li>
+                <li class="dropdown">
+                 <a id="timer"> </a>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-envelope"></i> <b class="caret"></b></a>
+                    <ul class="dropdown-menu message-dropdown">
+                        <% @notifications_list.each do |notice|%>
+                        <li class="message-preview">
+                            <a href="#" class="dropdown-toggle disabled">
+                                <div class="media">
+                                    <span class="pull-left">
+                                        <img class="media-object" src="http://placehold.it/50x50" alt="">
+                                    </span>
+                                    <div class="media-body">
+                                        <h5 class="media-heading"><strong> <%= " #{current_user.username} " %></strong>
+                                        </h5>
+                                        <p class="small text-muted"><i class="fa fa-clock-o"></i> <%= notice.updated_at%></p>
+                                        <p><%= notice.notification%></p>
+                                    </div>
+                                </div>
+                            </a>
+                        </li> 
+                        <% end %>
+                        <li class="message-footer">
+                          <a href="#notification_modal" data-toggle="modal" data-target="#notification_modal">Read All New Messages</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-bell"></i> <b class="caret"></b></a>
+                    <ul class="dropdown-menu alert-dropdown">
+                      <% @message.each do |alert| %>
+                        <li>
+                            <a href="#" class="dropdown-toggle disabled"><%=alert.message%></a>
+                        </li>
+                        <li class="divider"></li>
+                      <%end%>
+                      <li href="#"></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><%= current_user.username %><b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#contact" class="dropdown-toggle disabled" role="button" data-toggle="modal" data-target="#contact"><i class="fa fa-fw fa-phone"></i> Contact</a>
+                        </li>
+                        <li>
+                            <a href="#help" class="dropdown-toggle disabled" role="button" data-toggle="modal" data-target="#help"><i class="fa fa-fw fa-question"></i> Help</a>
+                       </li>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <% if user_signed_in? %>
+                            <span id="span"><i class="fa fa-fw fa-power-off"></i>
+                            <%= link_to "Log out", destroy_user_session_path, :method => :delete %>
+                            <% end %></span>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li <% if !@class_show_active.blank? %><%= @class_show_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :action=>'show', :id => current_user.id  do %>
+                        <span id="span"><i class="fa fa-fw fa-home"></i>Dalal Panel</span>
+                    <% end %>
+                    </li>
+                    <li <% if !@class_stock_active.blank? %><%= @class_stock_active %><% end %>  >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'stock' do %>
+                        <span id="span"><i class="fa fa-fw fa-table"></i> Stock Exchange</span>
+                    <% end %>
+                    </li>
+                    <li <% if !@class_buy_sell_active.blank? %><%= @class_buy_sell_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'buy_sell_page' do %>
+                        <span id="span"><i class="fa fa-fw fa-money"></i> Buy and Sell</span>
+                    <% end %>   
+                    </li>
+                    <li <% if !@class_bank_active.blank? %><%= @class_bank_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'bank_mortgage' do %>
+                        <span id="span"><i class="fa fa-fw fa-bank"></i> Bank Mortage</span>
+                    <% end %>
+                    </li>
+                    <li <% if !@class_company_active.blank? %><%= @class_company_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'company' do %>
+                        <span id="span"><i class="fa fa-fw fa-edit"></i> Company Profile</span>
+                    <% end %>
+                    </li>
+                    <!-- <li>
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'market_events' do %>    
+                        <span id="span"><i class="fa fa-fw fa-wrench"></i> Market Events</span>
+                    <% end %>
+                    </li> -->
+                    <li <% if !@class_history_active.blank? %><%= @class_history_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'buy_sell_history' do %>
+                        <span id="span"><i class="fa fa-fw fa-book"></i>Bids and Asks</span>
+                    <% end %>
+                    </li>
+                    <li <% if !@class_leader_active.blank? %><%= @class_leader_active %><% end %> >
+                    <%= link_to :controller=>'dalal_dashboard', :id => current_user.id , :action=>'leaderboard' do %>
+                        <span id="span"><i class="fa fa-fw fa-users"></i> Leaderboard</span>
+                    <% end %>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+   
+        <div class="modal" id="marketevent_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" <% {:is_active => true} %> > 
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <br>   
+             <div class="loader-modal-div" style="position:relative; z-index:99;">
+                            
+             </div>      
+                <div class="modal-body">
+                <%= render partial:"dalal_dashboard/partials/marketevent_modal_partial",locals: { market_events_paginate: @market_events_paginate,market_events_count: @market_events_count } %>
+                </div>
+              </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+
+        <div class="modal" id="notification_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" <% {:is_active => true} %>> 
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <br>       
+             <div class="loader-modal-div" style="position:relative; z-index:99;">
+                            
+             </div>  
+                <div class="modal-body" data-uri="<%= request.host %>:<%= request.port %>/websocket">
+                <%= render partial:"dalal_dashboard/partials/notification_modal_partial",locals: {notifications_paginate: @notifications_paginate, notifications_count: @notifications_count} %>
+                </div>
+              </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal" id="help" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+    <div class="modal-dialog">
+      <div class="modal-content contcustom-help">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <br>         
+          <div class="modal-body">
+           <h2>Manual</h2> 
+
+          <div class="row">
+            <div class="col-lg-12">
+               <p>
+                   Its a virtual stock exchange game. A stock exchange is a place where the company sell their stocks to the public at a price which depends on the company market value and performance. 
+               </p>
+                   <p><img src = "/assets/DS1-min.png" style="width:900px;height:400px;" class="img-responsive">
+                   </p>
+               <p>
+                   The price of the stock varies on the market events and stock transactions between different players.We have introduced a new feature in Dalal Street,Market Events.It lets you to have a better picture on what stock to buy,sell or trade.New events will be put up from time to time,so watch out for new events and trade wisely.<br><b> Note : </b>The events are fictional and not related to real market condtions.
+               </p>
+               
+               <br>
+               <br>
+               
+               <h4>Stock Exchange</h4>
+               <p><img src = "/assets/DS3-min.png" style="width:900px;height:400px;" class="img-responsive">
+                   </p>
+                <ul>
+                <li>Market events (Blue colour flash card) gives you the number of market events that has happened till this instant.</li>
+                <li>Cash (Green colour flash card) shows the amount of virtual money that is in your account.</li>
+                <li>Stock (Yellow colour flash card) shows the value of the stocks that you own in currency rate. This keeps varying depending on the present market price of the stocks that you own.</li>
+                <li>Net wealth (Red colour flash card) is the sum of CASH + STOCK.</li>
+                <li>The number of stock in exchange gives the units of shares that the company has put up on the market. Stock in Market refers to the number of stocks that are owned by the players.</li>
+                <li>To <b>trade</b> stocks enter the amount of stocks you want to purchase from the company and hit the trade button<b>(green trade button).</b></li>
+                <li>The notification panel on the right tracks all your stock transactions and moves in the market.</li>
+                </ul>
+
+                <br>
+                <br>
+
+                <h4>Buy and Sell</h4>
+                <p><img src = "/assets/DS10-min.png" style="width:900px;height:400px;" class="img-responsive">
+                   </p>
+                <ul>
+                <li>It lists all the stocks in the market and its related information.</li>
+                <li>To <b>bid</b> or <b>ask</b> click on the company name. The pop up will open as shown in the picture above.</li>
+                <li>You can bid and ask from Buy Panel and Sell Panel respectively.</li>
+                <li>The <b>highest bid</b> will be given higher preference .</li>
+                <li>You can also sell shares provided that you own shares of the company .The <b>sell bid</b> with the least price will be given highest preference.</li>
+                </ul>
+
+                <br>
+                <br>
+
+                <h4>Bank Mortgage</h4>
+                <p><img src = "/assets/DS5-min.png" style="width:900px;height:400px;" class="img-responsive">
+                   </p>
+                <ul>
+                <li>It lists all the stocks that you own and its related information.</li>
+                <li>Bank Mortgage can be used to mortgage stocks with the bank at <b>75%(may vary during the course of time)</b> of the present price of the mortgaged stocks and later the mortgaged stocks can be bought back from the bank at the stocks current price.</li>
+                </ul>
+
+                <br>
+                <br>
+
+                <h4>Company Profile</h4>
+                <p><img src = "/assets/DS9-min.png" style="width:900px;height:400px;" class="img-responsive">
+                                   </p>
+                <p>This page gives information about previous market news and history of a stock which can be of help to predict the rate of the stock.</p>
+                 
+                <br>
+                <br>
+
+                <h4>Bids and Asks</h4>
+                <p><img src = "/assets/DS11-min.png" style="width:900px;height:400px;" class="img-responsive">
+                                   </p>
+                <p>This page shows you the Bids and Asks which are not successful.<p>
+                <b>Hint : </b>If your <b>bids are not successful</b> means that  someone has already bid for that stock at a higher price which will be given more preference over yours, so try bidding at a higher price till it succeeds<b>(that is totally up to you)</b>.Always keep a check on your cash and market events and go for the right stocks.</p> 
+                <p>If your <b>not able to sell your stocks at your ask price</b> it simply means that someone else has asked for the same stock at an even lower price which will be given more preference over your ask price.(try to sell it at lower prices if you want to sell your stocks successfully).</p>
+
+                <br>
+                <br>
+                <p>You can now play Dalal Street on the go.The new interface is compatible with <b>mobile devices.</b></p>
+                <p><b>Do not hesitate to contact us if you face any problems.</b>Have a great Pragyan!</p>
+            </div>
+          </div>
+          
+      </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+     <div class="modal" id="contact" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"> 
+    <div class="modal-dialog">
+      <div class="modal-content contcustom-contact">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <br>         
+               <div class="modal-body">
+                   <h2>Contact Us</h2> 
+                      <div class="row">
+                      <div class="col-lg-12">
+                      <h5>John Mathai - +919790922889</h5>
+                      <br>
+                      <h5>Giridhar    - +919003206058</h5>
+                      <br>
+                      <a href="https://www.facebook.com/pages/Dalal-Street/109866185756914" target="_blank" style="font-size:20px;">Visit our Facebook Page for regular updates.</a>
+                      </div>
+                      </div>
+               </div>
+          </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+     <%= yield :page_wrapper %>
+
+
+  </div>
+    <!-- /#wrapper -->
+
+   <%= yield :style %>
+
+   <script type="text/javascript">
+
+   $('#notification_modal').modal('hide');
+   $('#marketevent_modal').modal('hide');
+   $('#help').modal('hide');
+
+ 
+   window.requestAnimationFrame = (function(){
+    return  window.requestAnimationFrame       ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame    ||
+            function( callback ){
+              window.setTimeout(callback, 1000 / 60);
+            };
+  })();
+
+
+  var speed = 1000;
+  (function currencySlide(){
+      var currencyPairWidth = $('.slideItem:first-child').outerWidth();
+      $(".modal-backdrop").remove();
+      $("#news1,#news2").newsticker();
+      $(".slideContainer").animate({marginLeft:-currencyPairWidth},speed, 'linear', function(){
+                  $(this).css({marginLeft:0}).find("li:last").after($(this).find("li:first"));
+          });
+          requestAnimationFrame(currencySlide);
+  })();
+
+    var dispatcher = new WebSocketRails($(".table").data('uri'), true);
+    
+
+    $(function(){
+        var layout_channel = new WebsocketClass(dispatcher);
+        var layout_subscribe = layout_channel.channel_subscribe("layout");
+        var layout_binder = layout_channel.channel_binder("layout_channel",display_mass_message);
+    });
+
+    var display_mass_message = function(data){
+      $( ".mass-alert" ).append('<div class="alert alert-warning alert-dismissable"><button class="close" aria-hidden="true" data-dismiss="alert" type="button">×</button>'+data+'</div>' );
+    };
+
+    var modal_update_socket = new WebsocketClass(dispatcher);
+    var modal_update_socket_binder = modal_update_socket.evt_binder("update_modal_partials");
+    var update_modal_partials = function(num,type){
+       var data = {page: num,type: type};
+       var modal_update_socket_trigger = modal_update_socket.evt_trigger("update_modal_partials",data);
+       // var modal_update_socket_unbind = modal_update_socket.evt_unbinder();
+
+    };
+    
+    var show_channel = new WebsocketClass(dispatcher);
+    var stock_channel = new WebsocketClass(dispatcher);
+    var buy_sell_channel = new WebsocketClass(dispatcher);
+
+    var show_update_socket = new WebsocketClass(dispatcher);
+    var buy_sell_socket = new WebsocketClass(dispatcher);
+    var stock_table_socket = new WebsocketClass(dispatcher);
+
+     $(".allownumericwithdecimal").on("keypress keyup blur",function (event) {
+            //this.value = this.value.replace(/[^0-9\.]/g,'');
+     $(this).val($(this).val().replace(/[^0-9\.]/g,''));
+            if ((event.which != 46 || $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
+                event.preventDefault();
+            }
+     });
+   
+    </script>
+
+   <%= yield :script %>
+
+</body>
+</html>

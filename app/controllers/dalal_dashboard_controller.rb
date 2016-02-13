@@ -30,6 +30,7 @@ layout "../dalal_dashboard/layout/layout.html.erb"
        @user = User.find(current_user)
        @username = @user.username
        redirect_to :action => 'index' 
+
 	end
 	
 def show
