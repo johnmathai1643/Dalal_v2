@@ -16,3 +16,7 @@
  *= require font-awesome
  *= require loader
  */
+
+.newsticker {
+	min-height: 20px !important;
+}

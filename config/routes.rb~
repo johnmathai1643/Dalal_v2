@@ -13,12 +13,25 @@ Rails.application.routes.draw do
 
  #get 'dalal_dashboard/index'  remove it later only for development purpose
 
+<<<<<<< Updated upstream
 
 ###### API routes ##################################
   get '/api/lulz' => 'api_lulz#index'
   get 'api/market_events' => 'api_lulz#get_market_events'
 ####################################################
 
+||||||| merged common ancestors
+=======
+
+###### API routes ##################################
+  get '/api/market_events' => 'api#get_market_events'
+  get '/api/stocks' => 'api#get_stocks'
+  get '/api/notifications' => 'api#get_notifications'
+  get '/api/leaderboard' => 'api#get_leaderboard'
+  
+####################################################
+
+>>>>>>> Stashed changes
   get '/dalal_dashboard/:id' => 'dalal_dashboard#show'
   get '/dalal_dashboard/:id/index' => 'dalal_dashboard#show'
   get '/dalal_dashboard/:id/stock' => 'dalal_dashboard#stock'
