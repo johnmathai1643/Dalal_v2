@@ -64,4 +64,11 @@ class ApiController < ActionController::Base
 		}
 	end
 	
+	def get_company_profile
+        @stocks_list = Stock.all
+		
+		render :json => {
+			stocks_list: @stocks_list
+		}
+	end
 end
