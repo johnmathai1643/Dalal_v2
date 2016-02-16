@@ -90,13 +90,12 @@ class ApiController < ActionController::Base
 	    end ##main if block 1
 	    
 	    if @notice then
-	    	puts "ARUN IS A FAG"
 	    	render :json => {
 	    		success: "true",
 	    		message: @notice
 	    	}
 	    	@stockall = Stock.all
-            stock_ajax_handler_helper(@stockall)
+            api_stock_ajax_handler_helper(@stockall, @cur_user)
 	    else
 	    	render :json => {
 	    		success: "false",

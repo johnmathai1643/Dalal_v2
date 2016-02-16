@@ -95,7 +95,7 @@ class ApiController < ActionController::Base
 	    		message: @notice
 	    	}
 	    	@stockall = Stock.all
-            stock_ajax_handler_helper(@stockall)
+            api_stock_ajax_handler_helper(@stockall, @cur_user)
 	    else
 	    	render :json => {
 	    		success: "false",

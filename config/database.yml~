@@ -31,7 +31,7 @@
 development:
   adapter: mysql2
   username: root
-  password: lol
+  password: 
   port: 5432
   database: dalalstreet_dev
   encoding: utf8
@@ -45,7 +45,7 @@ development:
 test:
   adapter: mysql2
   database: dalalstreet_test
-  username: root
+  username: dalal
   encoding: utf8
 
 production:

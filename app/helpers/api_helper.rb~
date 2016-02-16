@@ -1,12 +1,11 @@
 module ApiHelper
 	def check_credentials!
-		render :text => request.headers["HTTP_X_DALAL_API_EMAIL"]
-		return false
-		u = User.find_by_email(request.headers["HTTP-X-DALAL-API-EMAIL"])
-		if !u or !u.valid_password?(request.headers["HTTP-X-DALAL-API-PASSWORD"])
+		u = User.find_by_email(request.headers["X-DALAL-API-EMAIL"])
+		if !u or !u.valid_password?(request.headers["X-DALAL-API-PASSWORD"])
 			render :text => "not permitted"
 		else
 			@cur_user = u
+			current_user = u
 		end
 	end
 end

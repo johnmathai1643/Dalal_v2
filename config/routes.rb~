@@ -19,7 +19,7 @@ Rails.application.routes.draw do
   get '/api/notifications' => 'api#get_notifications'
   get '/api/leaderboard' => 'api#get_leaderboard'
   
-  post '/api/stocks/:id' => 'api#post_buy_stocks'
+  post '/api/stocks' => 'api#post_buy_stocks'
   
 ####################################################
 

@@ -57,9 +57,7 @@ module SocketHelper
    
    
    def stock_ajax_handler_helper(stocks)
-   		puts "############################## ARUN IS A FAG ################################"
       if user_signed_in?
-             		puts "$$$$$$$$$$$$$$$$ ARUN IS A FAG $$$$$$$$$$$$$$$$$$$$$$$"
         @price_of_tot_stock = Stock.get_total_stock_price(current_user.id)
         @user_cash_inhand = User.find(current_user.id)
         @user_current_cash = @user_cash_inhand.cash.round(2)
@@ -84,6 +82,39 @@ module SocketHelper
         WebsocketRails[:buy_sell].trigger(:buy_sell_channel, "true")
 
         send_message :stock_ajax_handler, data
+      end
+   end
+   
+   def api_stock_ajax_handler_helper(stocks, cur_user)
+   	  current_user = cur_user
+   	  @current_user = cur_user
+      if true
+        @price_of_tot_stock = Stock.get_total_stock_price(current_user.id)
+        @user_cash_inhand = User.find(current_user.id)
+        @user_current_cash = @user_cash_inhand.cash.round(2)
+        @market_events_total = MarketEvent.count
+        @market_events_paginate = MarketEvent.page(1).per(10)
+        @notifications_list = Notification.select("notification,updated_at").where('user_id' => current_user.id).last(10).reverse
+
+        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@price_of_tot_stock ,  @price_of_tot_stock)
+        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@user_current_cash, @user_current_cash)
+        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_total, @market_events_total)
+
+        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@stocks_list, stocks )
+        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_paginate , @market_events_paginate)
+        update_partial_input('dalal_dashboard/partials/stock_partial', :@stocks_list, stocks)
+        update_partial_input('dalal_dashboard/partials/notification_partial', :@notifications_list , @notifications_list)
+
+        data = {}
+        data = load_data_with_partials(data)
+        
+        WebsocketRails[:show].trigger(:show_channel, "true")
+        WebsocketRails[:stock].trigger(:stock_channel, "true")
+        WebsocketRails[:buy_sell].trigger(:buy_sell_channel, "true")
+
+        #send_message :stock_ajax_handler, data
+        puts "swag"
+        WebsocketRails[:stock].trigger(:stock_ajax_handler, data)
       end
    end
    

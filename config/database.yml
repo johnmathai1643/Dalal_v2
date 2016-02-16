@@ -30,8 +30,8 @@
 
 development:
   adapter: mysql2
-  username: root
-  password: 
+  username: dalal
+  password: $$PenSwag123$$
   port: 5432
   database: dalalstreet_dev
   encoding: utf8
