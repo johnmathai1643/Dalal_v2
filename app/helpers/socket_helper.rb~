@@ -57,7 +57,6 @@ module SocketHelper
    
    
    def stock_ajax_handler_helper(stocks)
-   		puts "############################## ARUN IS A FAG ################################"
       if user_signed_in?
              		puts "$$$$$$$$$$$$$$$$ ARUN IS A FAG $$$$$$$$$$$$$$$$$$$$$$$"
         @price_of_tot_stock = Stock.get_total_stock_price(current_user.id)

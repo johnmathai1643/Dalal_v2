@@ -36,64 +36,49 @@ require "json"
     end
 
    def stock_ajax_handler
+       begin
            if user_signed_in?
               @success = 0
               @numofstock = data[:value]
               @stockidbought = data[:identity]
               @numofstock = @numofstock.to_f ##convert to integer
        
-              logger.info data[:value]
-       
-            if @stockidbought && @numofstock ##main if block 1 enters only if ajax variables are recieved
-               @stock_bought = Stock.find(@stockidbought)
-
-               if @stock_bought.stocksinexchange >= @numofstock and @numofstock > 0 and @numofstock <= 10
-                  @total_price_of_bought_stock = @numofstock*@stock_bought.currentprice
-                  @user_cash_inhand = User.find(current_user.id)
-                    if @user_cash_inhand.cash - @total_price_of_bought_stock > 0
-                       @user_cash_inhand.cash = @user_cash_inhand.cash-@total_price_of_bought_stock
-                       @stock_bought.stocksinexchange = @stock_bought.stocksinexchange - @numofstock
-                       @stock_bought.stocksinmarket = @stock_bought.stocksinmarket + @numofstock
-                       @stock_bought.save
-                       @user_cash_inhand.save
-                       @user_total_calculator = User.calculate_total(current_user.id)
-                       @stockused = StockUsed.create(:user_id => current_user.id, :stock_id => @stockidbought,:numofstock => @numofstock)
-                       flash[:notice] = "#{@numofstock} stocks of #{@stock_bought.stockname} traded successfully"
-                       flash[:error]=nil
-                       @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:notice], :seen => 1, :notice_type => 1)
-                       @success = 1
-                    else
-                       flash[:error] = "Not Enough Cash to trade #{@numofstock} stocks of #{@stock_bought.stockname}.You can get cash by mortgaging stocks at the Bank."
-                       @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 2)
-                    end
-               else
-                  if @numofstock > 10
-                    flash[:notice]=nil
-                    flash[:error] = "You cannot trade more than 10 stocks at a time.Trade failed."
-                    @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3)
-                  else
-                    flash[:notice]=nil
-                    flash[:error] = "Invalid trade parameters.Please check and try again."
-                    @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3)
-                  end
-               end      
-            else
-               flash[:notice]=nil
-               flash[:error] = "Did not receive request #{@numofstock} stocks of #{@stock_bought.stockname}.TRADE FAILED"
-               @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3) 
-            end ##main if block 1
-
-               @stockall = Stock.all
+	            if @stockidbought && @numofstock ##main if block 1 enters only if ajax variables are recieved
+	               @stocktobuy = Stock.where(:id => @stockidbought).first
+	               
+	               begin
+		               @success = Stock.buy_stuff(@stockidbought, @stocktobuy, @numofstock.to_f, current_user)
+		               if(@success) then
+		               		flash[:notice] = @success
+		               		flash[:error] = nil
+		               end
+		           rescue Exception => msg
+		           		flash[:notice] = nil
+		           		flash[:error] = msg
+		           end
+		                 
+	            else
+	               flash[:notice]=nil
+	               flash[:error] = "Did not receive request #{@numofstock} stocks of #{@stocktobuy.stockname}.TRADE FAILED"
+	               @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3) 
+	            end ##main if block 1
+	           
+	           @stockall = Stock.all
                if @success == 1
-                  stock_ajax_handler_helper(@stockall)
-               else
-                  stock_ajax_handler_helper(@stockall)
-               end ## end update block send response to client
-               
+		          stock_ajax_handler_helper(@stockall)
+		       else
+		       	  stock_ajax_handler_helper(@stockall)
+		       end ## end update block send response to client
+
            else
               send_message :stock_ajax_handler, flash[:error]
               redirect_to :action => 'index'
            end     ##if not user signed in block
+        rescue Exception => msg
+#        	puts Stock.inspect
+        	flash[:error] = msg.backtrace
+        	flash[:notice] = nil
+        end
     end #stock_ajax_handle def block
 
 
@@ -212,8 +197,7 @@ require "json"
       
       data = {}
       data = load_data_with_partials(data)
-      flash[:error] = "Sachin is a fag."
-#      send_message :buy_sell_partial_render, data
+      send_message :buy_sell_partial_render, data
       else
            flash[:error] = "You have encountered an unexpected error.Please login and Try again."
            redirect_to :action => 'index'

@@ -18,7 +18,8 @@ Rails.application.routes.draw do
   get '/api/stocks' => 'api#get_stocks'
   get '/api/notifications' => 'api#get_notifications'
   get '/api/leaderboard' => 'api#get_leaderboard'
-  get '/api/company_profile' => 'api#get_company_profile'
+  
+  post '/api/stocks/:id' => 'api#post_buy_stocks'
   
 ####################################################
 

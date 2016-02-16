@@ -1,4 +1,5 @@
 class ApiController < ActionController::Base
+	include SocketHelper
 	include ApiHelper
 	before_filter :check_credentials!
 	
@@ -64,4 +65,42 @@ class ApiController < ActionController::Base
 		}
 	end
 	
+	def post_buy_stocks
+		@success = 0
+		@numofstock = params[:value]
+		@stockidbought = params[:identity]
+		@numofstock = @numofstock.to_f ##convert to integer
+		
+		@notice = nil
+		@error = nil
+       
+	    if @stockidbought && @numofstock
+	    	@stocktobuy = Stock.where(:id => @stockidbought).first
+	        begin
+		       @success = Stock.buy_stuff(@stockidbought, @stocktobuy, @numofstock.to_f, @cur_user)
+		       if(@success) then
+		        	@notice = @success
+		       end
+		    rescue => msg
+		    	@error = msg.message
+		    end
+	    else
+	        @error = "Bad API Call. 'value' and 'identity' expected."
+	        @notification = Notification.create(:user_id =>current_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
+	    end ##main if block 1
+	    
+	    if @notice then
+	    	render :json => {
+	    		success: "true",
+	    		message: @notice
+	    	}
+	    	@stockall = Stock.all
+            stock_ajax_handler_helper(@stockall)
+	    else
+	    	render :json => {
+	    		success: "false",
+	    		message: @error
+	    	}
+	   	end
+	end
 end

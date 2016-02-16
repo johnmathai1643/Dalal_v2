@@ -28,7 +28,7 @@ has_many :banks
 				Notification.create(:user_id =>current_user.id, :notification => notice, :seen => 1, :notice_type => 1)
 				@success = notice
 			else
-				err = "Not Enough Cash to trade #{@numofstock} stocks of #{@stock_bought.stockname}. You can get cash by mortgaging stocks at the Bank."
+				err = "#"Not Enough Cash to trade #{@numofstock} stocks of #{@stock_bought.stockname}. You can get cash by mortgaging stocks at the Bank."
 				Notification.create(:user_id =>current_user.id, :notification => err, :seen => 1, :notice_type => 2)
 				raise err
 				end

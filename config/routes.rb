@@ -19,6 +19,8 @@ Rails.application.routes.draw do
   get '/api/notifications' => 'api#get_notifications'
   get '/api/leaderboard' => 'api#get_leaderboard'
   
+  post '/api/stocks/:identity' => 'api#post_buy_stocks'
+  
 ####################################################
 
   get '/dalal_dashboard/:id' => 'dalal_dashboard#show'
