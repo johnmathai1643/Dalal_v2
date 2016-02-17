@@ -46,6 +46,57 @@ has_many :banks
 
 		return @success
 	end
+	
+	def self.bid_stuff(current_user, stock_id, num_of_stocks, price)
+	  puts current_user.id
+		if !num_of_stocks.blank? && !price.blank?
+		  @stockid = stock_id
+		  @numofstock_buy_for = num_of_stocks
+		  @bid_price = price
+		  @bid_price = @bid_price.to_f.round(2);
+		  @stock = Stock.find(@stockid) 
+		  @user_cash_inhand = User.find(current_user.id)
+		 
+		  if @stock.stocksinmarket.to_f >= @numofstock_buy_for.to_f
+		   if @bid_price >= (@stock.currentprice.to_f-0.1*@stock.currentprice.to_f)
+		     if @user_cash_inhand.cash.to_f >= @numofstock_buy_for.to_f*@bid_price.to_f 
+		      @buy_bid = Buy.create(:user_id=>current_user.id, :stock_id=>@stockid, :price=>@bid_price, :numofstock=>@numofstock_buy_for)
+		      @notice = "Successful Bid."
+		      #flash[:error] =nil
+		      @notification = Notification.create(:user_id =>current_user.id, :notification => @notice, :seen => 1, :notice_type => 1)
+		      @comparator = User.comparator("buy")
+		      @user_total_calculator = User.calculate_total(current_user.id)
+		      #buy_sell_stock_socket_helper
+		     else
+		      #flash[:notice]=nil
+		      error = "Buy request failed.You only have $ #{@user_cash_inhand.cash}."
+		      @notification = Notification.create(:user_id =>current_user.id, :notification => @error, :seen => 1, :notice_type => 2)
+		      raise error
+		      #buy_sell_stock_socket_helper
+		     end
+		   else
+		    #flash[:notice]=nil
+		    @min_bid_price = (@stock.currentprice.to_f-0.1*@stock.currentprice.to_f).round(2)
+		    error = "You cannot bid for less than 10% of the current price the minimum buy price for #{@stock.stockname} is #{@min_bid_price}."
+		    @notification = Notification.create(:user_id =>current_user.id, :notification => error, :seen => 1, :notice_type => 2)
+		    raise error
+		    #buy_sell_stock_socket_helper   
+		   end  
+		  else
+		   #flash[:notice]=nil
+		   error = "Buy request failed.There are only #{@stock.stocksinmarket} stocks in the market."
+		   @notification = Notification.create(:user_id =>current_user.id, :notification => error, :seen => 1, :notice_type => 2)
+		   raise error
+		   #buy_sell_stock_socket_helper
+		  end
+		else
+		  #flash[:notice]=nil
+		  error = "You have encountered an unexpected error. Please login and Try again."
+		  raise error
+		  #redirect_to :action => 'index'
+		end 
+  	end
+
 
 
  def self.get_total_stock_price(id) 

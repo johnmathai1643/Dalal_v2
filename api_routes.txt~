@@ -1,0 +1,17 @@
+GET:
+/details
+/stocks-strip (done)
+/stocks-full (done)
+/transactions (done)
+/market_events (done)
+/notifications (done)
+/alerts
+/bids
+/asks
+/leaderboard (done)
+POST:
+/trade
+/buy
+/sell
+/mortgage
+/return

@@ -110,4 +110,36 @@ class ApiController < ActionController::Base
 	    	}
 	   	end
 	end
+	
+	def post_bid_stocks
+		@notice = nil
+		@numstock = params[:value]
+		@stockid = params[:identity]
+		@bidprice = params[:price]
+		@numstock = @numstock.to_f
+		
+		@error = nil
+		
+		if @numstock && @stockid && @bidprice
+			begin
+				@notice = Stock.bid_stuff(@cur_user, @stockid, @numstock.to_f, @bidprice)
+			rescue => msg
+				@error = msg.message
+			end
+		else
+			@error = "Bad API Call. Invalid parameters"
+	        @notification = Notification.create(:user_id =>@cur_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
+		end
+		if !@error then
+			render :json => {
+				success: "true",
+				message: @notice
+			}
+		else
+			render :json => {
+				success: "false",
+				message: @error
+			}
+		end
+	end
 end
