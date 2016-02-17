@@ -65,6 +65,13 @@ class ApiController < ActionController::Base
 		}
 	end
 	
+	def get_transactions
+		@boughtstocks = Stock.return_bought_stocks(@cur_user.id)
+		render :json => {
+			stocks: @boughtstocks
+		}
+	end
+	
 	def post_buy_stocks
 		@success = 0
 		@numofstock = params[:value]
