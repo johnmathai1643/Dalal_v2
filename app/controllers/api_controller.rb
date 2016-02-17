@@ -86,7 +86,7 @@ class ApiController < ActionController::Base
 		    end
 	    else
 	        @error = "Bad API Call. 'value' and 'identity' expected."
-	        @notification = Notification.create(:user_id =>current_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
+	        @notification = Notification.create(:user_id =>@cur_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
 	    end ##main if block 1
 	    
 	    if @notice then
