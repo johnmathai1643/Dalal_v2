@@ -88,34 +88,32 @@ module SocketHelper
    def api_stock_ajax_handler_helper(stocks, cur_user)
    	  current_user = cur_user
    	  @current_user = cur_user
-      if true
-        @price_of_tot_stock = Stock.get_total_stock_price(current_user.id)
-        @user_cash_inhand = User.find(current_user.id)
-        @user_current_cash = @user_cash_inhand.cash.round(2)
-        @market_events_total = MarketEvent.count
-        @market_events_paginate = MarketEvent.page(1).per(10)
-        @notifications_list = Notification.select("notification,updated_at").where('user_id' => current_user.id).last(10).reverse
 
-        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@price_of_tot_stock ,  @price_of_tot_stock)
-        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@user_current_cash, @user_current_cash)
-        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_total, @market_events_total)
+      @price_of_tot_stock = Stock.get_total_stock_price(current_user.id)
+      @user_cash_inhand = User.find(current_user.id)
+      @user_current_cash = @user_cash_inhand.cash.round(2)
+      @market_events_total = MarketEvent.count
+      @market_events_paginate = MarketEvent.page(1).per(10)
+      @notifications_list = Notification.select("notification,updated_at").where('user_id' => current_user.id).last(10).reverse
 
-        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@stocks_list, stocks )
-        update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_paginate , @market_events_paginate)
-        update_partial_input('dalal_dashboard/partials/stock_partial', :@stocks_list, stocks)
-        update_partial_input('dalal_dashboard/partials/notification_partial', :@notifications_list , @notifications_list)
+      update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@price_of_tot_stock ,  @price_of_tot_stock)
+      update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@user_current_cash, @user_current_cash)
+      update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_total, @market_events_total)
 
-        data = {}
-        data = load_data_with_partials(data)
+      update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@stocks_list, stocks )
+      update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_paginate , @market_events_paginate)
+      update_partial_input('dalal_dashboard/partials/stock_partial', :@stocks_list, stocks)
+      update_partial_input('dalal_dashboard/partials/notification_partial', :@notifications_list , @notifications_list)
+
+      data = {}
+      data = load_data_with_partials(data)
         
-        WebsocketRails[:show].trigger(:show_channel, "true")
-        WebsocketRails[:stock].trigger(:stock_channel, "true")
-        WebsocketRails[:buy_sell].trigger(:buy_sell_channel, "true")
+      WebsocketRails[:show].trigger(:show_channel, "true")
+      WebsocketRails[:stock].trigger(:stock_channel, "true")
+      WebsocketRails[:buy_sell].trigger(:buy_sell_channel, "true")
 
         #send_message :stock_ajax_handler, data
-        puts "swag"
-        WebsocketRails[:stock].trigger(:stock_ajax_handler, data)
-      end
+      WebsocketRails[:stock].trigger(:stock_ajax_handler, data)
    end
    
    #module_function :stock_ajax_handler_helper
@@ -185,5 +183,43 @@ module SocketHelper
               data = load_data_with_partials(data)
               send_message :bank_mortgage_socket, data
        end
-   end ##bank_mortgage_socket_helper 
+   end ##bank_mortgage_socket_helper
+   
+	def api_bank_mortgage_socket_helper(cur_user)
+		@stocks_list = Stock.all
+		@stocks = Stock.return_bought_stocks(cur_user.id)
+		@stock = Stock.return_stock_user_first(cur_user.id)
+		@price_of_tot_stock = Stock.get_total_stock_price(cur_user.id)
+		@user_cash_inhand = User.find(cur_user.id)
+		@user_current_cash = @user_cash_inhand.cash.round(2)
+		@market_events_total = MarketEvent.count
+		
+		if !@stock.blank?
+			@mortgage = Bank.where("banks.user_id" => cur_user.id,"banks.stock_id" => @stock.id)
+		else  
+			@no_mortgage = nil
+		end  
+
+		if @mortgage.blank?
+			@no_mortgage = "You have not mortgaged any stocks yet."
+		end
+             
+		@notifications_list = Notification.get_notice(cur_user.id,10)
+		@notifications_paginate = Notification.order('created_at DESC').limit(7).offset(0) 
+		@notifications_count = Notification.count/7      
+		@market_events_paginate = MarketEvent.order('created_at DESC').limit(7).offset(0)
+		@market_events_count = MarketEvent.count/7 
+             
+		update_partial_input('dalal_dashboard/partials/main_bank_mortgage_partial', :@stocks , @stocks)
+		update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@user_current_cash,@user_current_cash)
+		update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_total,@market_events_total)
+              
+		update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@price_of_tot_stock , @price_of_tot_stock)
+		update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@stocks_list, @stocks_list )
+		update_partial_input('dalal_dashboard/partials/panel_dashboard_partial', :@market_events_paginate , @market_events_paginate)
+         
+		data = {}
+		data = load_data_with_partials(data)
+		#WebsocketRails[:stock].trigger(:bank_mortgage_partial_render, data)
+   end ##bank_mortgage_socket_helper  
 end

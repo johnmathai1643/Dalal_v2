@@ -14,14 +14,20 @@ Rails.application.routes.draw do
  #get 'dalal_dashboard/index'  remove it later only for development purpose
 
 ###### API routes ##################################
+  get '/api/' => 'api#index'
   get '/api/market_events' => 'api#get_market_events'
   get '/api/stocks' => 'api#get_stocks'
   get '/api/notifications' => 'api#get_notifications'
   get '/api/leaderboard' => 'api#get_leaderboard'
   get '/api/transactions' => 'api#get_transactions'
-  
+  get '/api/bids_and_asks' => 'api#get_bids_and_asks'
+  get '/api/home' => 'api#get_home'
+  get '/api/mortgage' => 'api#get_mortgage'
+
   post '/api/stocks/:identity' => 'api#post_buy_stocks'
   post '/api/stocks/bid/:identity' =>'api#post_bid_stocks'
+  post '/api/mortgage/to_bank/:stock_id' => 'api#post_mortgage_to_bank'
+  post '/api/mortgage/return_from_bank/:mortgage_id' => 'api#post_mortgage_return_from_bank'
   
 ####################################################
 

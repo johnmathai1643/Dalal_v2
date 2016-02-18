@@ -341,82 +341,53 @@ require "json"
      end
 
      def bank_mortgage_socket
-      if user_signed_in?
-           @type = data[:type_stock].split("_")[0]
+		if user_signed_in?
+			@type = data[:type_stock].split("_")[0]
  
-          if @type == 'bank' && !data[:num_of_stock].blank?
-                @stockid = data[:type_stock].split("_")[1]
-                @numofstock_to_mortgage = data[:num_of_stock]
-                @check_stock = Stock.joins(:stock_useds).select("stocks.*,sum(stock_useds.numofstock) as totalstock").where('stock_useds.user_id' => current_user.id,'stocks.id' => @stockid ).group("stock_id").first
-                
-                if @check_stock.totalstock.to_f >= @numofstock_to_mortgage.to_f and @numofstock_to_mortgage.to_f>0
-                   @user_cash_inhand = User.find(current_user.id)
-                   @user_cash_inhand.cash = @user_cash_inhand.cash.to_f + 0.75*@numofstock_to_mortgage.to_f*@check_stock.currentprice.to_f
-                   @stockused = StockUsed.create(:user_id => current_user.id, :stock_id => @stockid,:numofstock => -1*@numofstock_to_mortgage.to_f)
-                   @mortgage = Bank.create(:user_id => current_user.id, :stock_id => @stockid,:pricerendered => @check_stock.currentprice, :numofstock => @numofstock_to_mortgage)
-                   @user_cash_inhand.save  
-                   @extra_cash = 0.75*@numofstock_to_mortgage.to_f*@check_stock.currentprice.to_f
-                   @extra_cash = @extra_cash.round(2)
-                   flash[:notice] = "Mortgage Successful.$#{@extra_cash} added to your account"
-                   flash[:error]=nil
-                   @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:notice], :seen => 1, :notice_type => 1)
-                   @user_total_calculator = User.calculate_total(current_user.id)
-                   bank_mortgage_socket_helper
-                   # redirect_to :controller=>'dalal_dashboard', :id=>current_user.id, :action=>'bank_mortgage'
-                else
-                   flash[:notice]=nil
-                   flash[:error] = "Invalid request.You only have #{@check_stock.totalstock} stocks of #{@check_stock.stockname}."
-                   @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 2)
-                   bank_mortgage_socket_helper
-                   # redirect_to :controller=>'dalal_dashboard', :id=>current_user.id, :action=>'bank_mortgage'
-                end
-            elsif @type == 'bankreturn'
-                   logger.info data[:type_stock]
-                   ################## check mortgage again ######################################################
-                   @id = data[:type_stock].split("_")[1]
-                   @mortgage = Bank.where("banks.user_id" => current_user.id,"banks.id" => @id).first
-                   @user = User.find(current_user.id)
-                   @stock = Stock.select("currentprice").where('stocks.id' => @mortgage.stock_id).first
-                   #### u can just modifify that that record #####
-                   @stockused = StockUsed.create(:user_id => current_user.id, :stock_id => @mortgage.stock_id,:numofstock => @mortgage.numofstock)
-                   
-                   if @user.cash > @mortgage.numofstock.to_f*@stock.currentprice.to_f
-                     @user.cash = @user.cash - @mortgage.numofstock.to_f*@stock.currentprice.to_f
-                     @deducted = (@mortgage.numofstock.to_f*@stock.currentprice).round(2);
-                     if @user.save
-                        @mortgage.destroy
-                        flash[:error]=nil
-                        flash[:notice] = "$#{@deducted} deducted from your account,stocks retrieved from bank."
-                        @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:notice], :seen => 1, :notice_type => 1)
-                        @user_total_calculator = User.calculate_total(current_user.id)
-                        bank_mortgage_socket_helper
-                        # redirect_to :controller=>'dalal_dashboard', :id=>current_user.id, :action=>'bank_mortgage'
-                     else
-                        flash[:notice]=nil
-                        flash[:error] = "Error processing request.Please try again."
-                        @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3)
-                        bank_mortgage_socket_helper
-                        # redirect_to :controller=>'dalal_dashboard', :id=>current_user.id, :action=>'bank_mortgage'
-                     end
-                   else
-                     flash[:notice]=nil
-                     flash[:error] = "You have only $#{@user.cash} in your account.You cannot retrieve your stocks."
-                     @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 2)
-                     bank_mortgage_socket_helper
-                   end  
-        else
-           flash[:notice]=nil
-           flash[:error] = "Did not recieve request.Please try again."
-           @notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3)
-           bank_mortgage_socket_helper
-           # redirect_to :controller=>'dalal_dashboard', :id=>current_user.id, :action=>'bank_mortgage'
-        end  
-        else
-          flash[:notice]=nil
-          flash[:error] = "You have encountered an unexpected error.Please login and Try again."
-          redirect_to :action => 'index'
-        end ##end of user_signed_in
-     end
+			if @type == 'bank' && !data[:num_of_stock].blank?
+				@stockid = data[:type_stock].split("_")[1]
+				@numofstock_to_mortgage = data[:num_of_stock]
+				@success = ""
+				begin
+					@success = Bank.mortgage_to_bank @stockid, @numofstock_to_mortgage, current_user
+					flash[:notice] = @success
+					flash[:error] = nil
+				rescue => msg
+					flash[:notice] = nil
+					flash[:error] = msg.message
+				end
+				
+				bank_mortgage_socket_helper
+		
+			elsif @type == 'bankreturn'
+				@id = data[:type_stock].split("_")[1]
+				@success = ""
+				
+				begin
+					@success = Bank.return_from_bank @id, current_user
+					flash[:notice] = @success
+					flash[:error] = nil
+				rescue => msg
+					flash[:notice] = nil
+					flash[:error] = msg.message
+				end
+				
+				bank_mortgage_socket_helper
+			
+			else
+				flash[:notice]=nil
+				flash[:error] = "Did not recieve request.Please try again."
+				@notification = Notification.create(:user_id =>current_user.id, :notification => flash[:error], :seen => 1, :notice_type => 3)
+				
+				bank_mortgage_socket_helper
+			end
+		
+		else
+			flash[:notice]=nil
+			flash[:error] = "You have encountered an unexpected error.Please login and Try again."
+			redirect_to :action => 'index'
+		end ##end of user_signed_in
+	end
 
      def index_updater
               Stock.connection.clear_query_cache

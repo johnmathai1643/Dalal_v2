@@ -1,0 +1,3 @@
+FIXME:
+
+Fiber error - can't yield from root fiber. Fix: Do any post request from the web first before letting mobiles start.
