@@ -53,6 +53,8 @@ gem 'seed_dump'
 gem 'bcrypt', '~> 3.1.7'
 
 gem 'websocket-rails', :git=> 'https://github.com/websocket-rails/websocket-rails.git', :branch=> 'master'
+gem 'hiredis'
+gem 'redis', require: ['redis', 'redis/connection/hiredis']
 # gem 'websocket-rails'
 
 gem 'faye-websocket', '0.10.0'

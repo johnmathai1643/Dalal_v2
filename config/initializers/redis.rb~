@@ -1,6 +1,6 @@
 class DataCache
   def self.data
-    @data ||= Redis.new(host: 'localhost', port: 6379)
+    @data ||= Redis.new(host: 'localhost', port: 6379, driver: hiredis)
   end
 
   def self.set(key, value)

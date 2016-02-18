@@ -89,8 +89,7 @@ var WebsocketClass = function(socket_url){
 	this.channel_binder = function(evt,callback_fn){
 		if(channel_link)
         { 
-        console.log(channel);
-          channel.bind(evt, function(data){ callback_fn(data); console.log("data received :"+data);});
+          channel.bind(evt, function(data){ callback_fn(data); console.log("data received :"+data);console.log(channel);});
           // channel.unbind(evt);
         }
         else

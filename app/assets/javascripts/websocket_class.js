@@ -25,6 +25,7 @@ var WebsocketClass = function(socket_url){
          $(".loader-modal-div").replaceWith(" "); //make changes if necessary
          $("input").prop('disabled', false);
          rs.refresh(data);
+         console.log(channel);
 	};
 
 	this.evt_binder = function(evt){

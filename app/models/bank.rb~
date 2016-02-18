@@ -18,7 +18,7 @@ class Bank < ActiveRecord::Base
 			@user_cash_inhand.save  
 			@extra_cash = 0.75*@numofstock_to_mortgage.to_f*@check_stock.currentprice.to_f
 			@extra_cash = @extra_cash.round(2)
-			@success = "Mortgage Successful. $#{@extra_cash} added to your account"
+			@success = "Mortgage Successful.$#{@extra_cash} added to your account"
 			@notification = Notification.create(:user_id =>cur_user.id, :notification => @success, :seen => 1, :notice_type => 1)
 			@user_total_calculator = User.calculate_total(cur_user.id)
 		else
