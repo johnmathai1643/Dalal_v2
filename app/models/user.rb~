@@ -18,6 +18,7 @@ class User < ActiveRecord::Base
 #######################################CHECK Time conflictssss...... and write Publish functions for notified user....................................#################
 #######################################FAILED u r buying and selling to the same person #########################################################################   
     def self.comparator(mode)
+    	Resque.enqueue(BidsAsks)
          @offset_buy_count = 0
          @offset_sell_count = 0
          @Buy_table  = Buy.uniq.pluck(:stock_id) 
@@ -69,13 +70,6 @@ class User < ActiveRecord::Base
         
        if !@Buy_id.blank? && !@Sell_id.blank?
         @user_buying = User.select('cash').where(:id => @Buy_id.user_id).first
-       	puts "#####################################"
-       	puts @Buy_id.user_id
-       	puts @user_buying.cash
-       	if (@Buy_id.user_id == 103)
-       		raise "Oh noes"
-       	end
-       	puts "#####################################"
         @sell_user_stock = StockUsed.select("sum(stock_useds.numofstock) as totalstock").where('stock_useds.user_id' => @Sell_id.user_id,'stock_id' => id).group("stock_id").first
         if @Buy_id.price.to_f >= @Sell_id.priceexpected.to_f
          if (@user_buying.cash >= @Buy_id.price*@Buy_id.numofstock.to_f) && (@sell_user_stock.totalstock.to_f >= @Sell_id.numofstock.to_f) && (@Buy_id.user_id != @Sell_id.user_id)

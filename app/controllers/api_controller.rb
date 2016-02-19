@@ -5,6 +5,7 @@ class ApiController < ActionController::Base
 	
 	def index
 		public_channels = WebsocketRails.channel_manager.channels.values.reject(&:is_private?).map(&:name)
+		Resque.workers.each {|w| w.unregister_worker}
 	  render json: public_channels
 #		render :text => "Hello " + @cur_user.username + " :)"
 	end
@@ -157,17 +158,17 @@ class ApiController < ActionController::Base
 	
 	def post_buy_stocks
 		@success = 0
-		@numofstock = params[:value]
-		@stockidbought = params[:identity]
+		@numofstock = params[:num_of_stock]
+		@stockname = params[:stockname]
 		@numofstock = @numofstock.to_f ##convert to integer
 		
 		@notice = nil
 		@error = nil
        
-	    if @stockidbought && @numofstock
-	    	@stocktobuy = Stock.where(:id => @stockidbought).first
+	    if @stockname && @numofstock
+	    	@stocktobuy = Stock.where(:stockname => @stockname).first
 	        begin
-		       @success = Stock.buy_stuff(@stockidbought, @stocktobuy, @numofstock.to_f, @cur_user)
+		       @success = Stock.buy_stuff(@stocktobuy, @numofstock.to_f, @cur_user)
 		       if(@success) then
 		        	@notice = @success
 		       end
@@ -175,7 +176,7 @@ class ApiController < ActionController::Base
 		    	@error = msg.message
 		    end
 	    else
-	        @error = "Bad API Call. 'value' and 'identity' expected."
+	        @error = "Bad API Call. 'num_of_stock' and 'identity' expected."
 	        @notification = Notification.create(:user_id =>@cur_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
 	    end ##main if block 1
 	    
@@ -196,16 +197,50 @@ class ApiController < ActionController::Base
 	
 	def post_bid_stocks
 		@notice = nil
-		@numstock = params[:value]
-		@stockid = params[:identity]
+		@numstock = params[:num_of_stock]
+		@stockname = params[:stockname]
 		@bidprice = params[:price]
 		@numstock = @numstock.to_f
+		@stock = Stock.where(:stockname => @stockname).first
 		
 		@error = nil
 		
-		if @numstock && @stockid && @bidprice
+		if @numstock && @stockname && @bidprice
 			begin
-				@notice = Stock.bid_stuff(@cur_user, @stockid, @numstock.to_f, @bidprice)
+				@notice = Stock.bid_stuff(@stock, @numstock.to_f, @bidprice, @cur_user)
+			rescue => msg
+				@error = msg.message
+			end
+		else
+			@error = "Bad API Call. Invalid parameters"
+	        @notification = Notification.create(:user_id =>@cur_user.id, :notification => @error, :seen => 1, :notice_type => 3) 
+		end
+		if !@error then
+			render :json => {
+				success: "true",
+				message: @notice
+			}
+		else
+			render :json => {
+				success: "false",
+				message: @error
+			}
+		end
+	end
+
+	def post_ask_stocks
+		@notice = nil
+		@numstock = params[:num_of_stock]
+		@stockname = params[:stockname]
+		@expectedprice = params[:price]
+		@numstock = @numstock.to_f
+		@stock = Stock.where(:stockname => @stockname).first
+		
+		@error = nil
+		
+		if @numstock && @stockname && @expectedprice
+			begin
+				@notice = Stock.ask_stuff(@stock, @numstock.to_f, @expectedprice, @cur_user)
 			rescue => msg
 				@error = msg.message
 			end
@@ -230,11 +265,12 @@ class ApiController < ActionController::Base
 		@success = nil
 		@error = nil
 		
-		if !params[:stock_id].blank? and !params[:num_of_stock].blank?
-			@stockid = params[:stock_id]
+		if !params[:stockname].blank? and !params[:num_of_stock].blank?
+			@stockname = params[:stockname]
+			@stock = Stock.where(:stockname => @stockname).first
 			@numofstock_to_mortgage = params[:num_of_stock]
 			begin
-				@success = Bank.mortgage_to_bank @stockid, @numofstock_to_mortgage, @cur_user
+				@success = Bank.mortgage_to_bank @stock, @numofstock_to_mortgage, @cur_user
 			rescue => msg
 				@error = msg.message
 			end

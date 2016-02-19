@@ -220,6 +220,6 @@ module SocketHelper
          
 		data = {}
 		data = load_data_with_partials(data)
-		WebsocketRails[:stock].trigger(:bank_mortgage_partial_render, data)
+		#WebsocketRails[:index].trigger(:index_channel, data)
    end ##bank_mortgage_socket_helper  
 end

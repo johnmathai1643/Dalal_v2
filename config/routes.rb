@@ -22,11 +22,12 @@ Rails.application.routes.draw do
   get '/api/transactions' => 'api#get_transactions'
   get '/api/bids_and_asks' => 'api#get_bids_and_asks'
   get '/api/home' => 'api#get_home'
-  get '/api/mortgage' => 'api#get_mortgage'
+  get '/api/mortgage/:stockname' => 'api#get_mortgage'
 
-  post '/api/stocks/:identity' => 'api#post_buy_stocks'
-  post '/api/stocks/bid/:identity' =>'api#post_bid_stocks'
-  post '/api/mortgage/to_bank/:stock_id' => 'api#post_mortgage_to_bank'
+  post '/api/stocks/:stockname' => 'api#post_buy_stocks'
+  post '/api/stocks/bid/:stockname' =>'api#post_bid_stocks'
+  post '/api/stocks/ask/:stockname' =>'api#post_ask_stocks'
+  post '/api/mortgage/to_bank/:stockname' => 'api#post_mortgage_to_bank'
   post '/api/mortgage/return_from_bank/:mortgage_id' => 'api#post_mortgage_return_from_bank'
   
 ####################################################

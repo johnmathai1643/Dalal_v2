@@ -4,42 +4,42 @@ class Stock < ActiveRecord::Base
 has_many :stock_useds
 has_many :banks
 
-	def self.buy_stuff(id, stock_bought, num, current_user)
+	def self.buy_stuff(stock_bought, num, cur_user)
 		@success = 0
 		@numofstock = num
-		@stockidbought = id
+		@stockidbought = stock_bought.id
 
 		logger.info num
 
-		@stock_bought = Stock.find(@stockidbought)
+		@stock_bought = stock_bought
 
 		if @stock_bought.stocksinexchange >= @numofstock and @numofstock > 0 and @numofstock <= 10
 			@total_price_of_bought_stock = @numofstock*@stock_bought.currentprice
-			@user_cash_inhand = User.find(current_user.id)
+			@user_cash_inhand = User.find(cur_user.id)
 			if @user_cash_inhand.cash - @total_price_of_bought_stock > 0
 				@user_cash_inhand.cash = @user_cash_inhand.cash-@total_price_of_bought_stock
 				@stock_bought.stocksinexchange = @stock_bought.stocksinexchange - @numofstock
 				@stock_bought.stocksinmarket = @stock_bought.stocksinmarket + @numofstock
 				@stock_bought.save
 				@user_cash_inhand.save
-				@user_total_calculator = User.calculate_total(current_user.id)
-				@stockused = StockUsed.create(:user_id => current_user.id, :stock_id => @stockidbought,:numofstock => @numofstock)
+				@user_total_calculator = User.calculate_total(cur_user.id)
+				@stockused = StockUsed.create(:user_id => cur_user.id, :stock_id => @stockidbought,:numofstock => @numofstock)
 				notice = "#{@numofstock} stocks of #{@stock_bought.stockname} traded successfully"
-				Notification.create(:user_id =>current_user.id, :notification => notice, :seen => 1, :notice_type => 1)
+				Notification.create(:user_id =>cur_user.id, :notification => notice, :seen => 1, :notice_type => 1)
 				@success = notice
 			else
 				err = "Not Enough Cash to trade #{@numofstock} stocks of #{@stock_bought.stockname}. You can get cash by mortgaging stocks at the Bank."
-				Notification.create(:user_id =>current_user.id, :notification => err, :seen => 1, :notice_type => 2)
+				Notification.create(:user_id =>cur_user.id, :notification => err, :seen => 1, :notice_type => 2)
 				raise err
 				end
 		else
 			if @numofstock > 10
 				err = "You cannot trade more than 10 stocks at a time. Trade failed."
-				Notification.create(:user_id =>current_user.id, :notification => err, :seen => 1, :notice_type => 3)
+				Notification.create(:user_id =>cur_user.id, :notification => err, :seen => 1, :notice_type => 3)
 				raise err
 			else
 				err = "Invalid trade parameters. Please check and try again."
-				Notification.create(:user_id =>current_user.id, :notification => err, :seen => 1, :notice_type => 3)
+				Notification.create(:user_id =>cur_user.id, :notification => err, :seen => 1, :notice_type => 3)
 				raise err
 			end
 		end      
@@ -47,30 +47,30 @@ has_many :banks
 		return @success
 	end
 	
-	def self.bid_stuff(current_user, stock_id, num_of_stocks, price)
-	  puts current_user.id
+	def self.bid_stuff(stock, num_of_stocks, price, cur_user)
+	  puts cur_user.id
 		if !num_of_stocks.blank? && !price.blank?
-		  @stockid = stock_id
+		  @stockid = stock.id
 		  @numofstock_buy_for = num_of_stocks
 		  @bid_price = price
 		  @bid_price = @bid_price.to_f.round(2);
-		  @stock = Stock.find(@stockid) 
-		  @user_cash_inhand = User.find(current_user.id)
+		  @stock = stock
+		  @user_cash_inhand = User.find(cur_user.id)
 		 
 		  if @stock.stocksinmarket.to_f >= @numofstock_buy_for.to_f
 		   if @bid_price >= (@stock.currentprice.to_f-0.1*@stock.currentprice.to_f)
 		     if @user_cash_inhand.cash.to_f >= @numofstock_buy_for.to_f*@bid_price.to_f 
-		      @buy_bid = Buy.create(:user_id=>current_user.id, :stock_id=>@stockid, :price=>@bid_price, :numofstock=>@numofstock_buy_for)
+		      @buy_bid = Buy.create(:user_id=>cur_user.id, :stock_id=>@stockid, :price=>@bid_price, :numofstock=>@numofstock_buy_for)
 		      @notice = "Successful Bid."
 		      #flash[:error] =nil
-		      @notification = Notification.create(:user_id =>current_user.id, :notification => @notice, :seen => 1, :notice_type => 1)
+		      @notification = Notification.create(:user_id =>cur_user.id, :notification => @notice, :seen => 1, :notice_type => 1)
 		      @comparator = User.comparator("buy")
-		      @user_total_calculator = User.calculate_total(current_user.id)
+		      @user_total_calculator = User.calculate_total(cur_user.id)
 		      #buy_sell_stock_socket_helper
 		     else
 		      #flash[:notice]=nil
 		      error = "Buy request failed.You only have $ #{@user_cash_inhand.cash}."
-		      @notification = Notification.create(:user_id =>current_user.id, :notification => @error, :seen => 1, :notice_type => 2)
+		      @notification = Notification.create(:user_id =>cur_user.id, :notification => @error, :seen => 1, :notice_type => 2)
 		      raise error
 		      #buy_sell_stock_socket_helper
 		     end
@@ -78,14 +78,14 @@ has_many :banks
 		    #flash[:notice]=nil
 		    @min_bid_price = (@stock.currentprice.to_f-0.1*@stock.currentprice.to_f).round(2)
 		    error = "You cannot bid for less than 10% of the current price the minimum buy price for #{@stock.stockname} is #{@min_bid_price}."
-		    @notification = Notification.create(:user_id =>current_user.id, :notification => error, :seen => 1, :notice_type => 2)
+		    @notification = Notification.create(:user_id =>cur_user.id, :notification => error, :seen => 1, :notice_type => 2)
 		    raise error
 		    #buy_sell_stock_socket_helper   
 		   end  
 		  else
 		   #flash[:notice]=nil
 		   error = "Buy request failed.There are only #{@stock.stocksinmarket} stocks in the market."
-		   @notification = Notification.create(:user_id =>current_user.id, :notification => error, :seen => 1, :notice_type => 2)
+		   @notification = Notification.create(:user_id =>cur_user.id, :notification => error, :seen => 1, :notice_type => 2)
 		   raise error
 		   #buy_sell_stock_socket_helper
 		  end
@@ -95,6 +95,30 @@ has_many :banks
 		  raise error
 		  #redirect_to :action => 'index'
 		end 
+  	end
+  	
+  	def self.ask_stuff(stock, num, askprice, cur_user)
+	  	@stockid = stock.id
+		@numofstock_sell_for = num
+		@ask_price = askprice
+		@ask_price = @ask_price.to_f.round(2)
+		@user_stock_inhand = Stock.joins(:stock_useds).select("stocks.*,sum(stock_useds.numofstock) as totalstock").where('stock_useds.user_id' => cur_user.id,'stocks.id' => @stockid ).group("stock_id")
+		
+		@success = nil
+		@error = nil
+                 
+		if @user_stock_inhand[0].totalstock.to_f >= @numofstock_sell_for.to_f
+			@sell_ask  = Sell.create(:user_id=>cur_user.id, :stock_id=>@stockid, :priceexpected=>@ask_price, :numofstock=>@numofstock_sell_for)
+			@success = "Sell request made."
+			@notification = Notification.create(:user_id =>cur_user.id, :notification => @success, :seen => 1, :notice_type => 1)
+			@comparator = User.comparator("sell")
+			@user_total_calculator = User.calculate_total(cur_user.id)
+		else
+			@error = "Sell request failed.You only have #{@user_stock_inhand[0].totalstock} stocks of #{@user_stock_inhand[0].stockname}."
+			@notification = Notification.create(:user_id =>cur_user.id, :notification => @error, :seen => 1, :notice_type => 2)
+			raise @error
+		end
+		return @success
   	end
 
 

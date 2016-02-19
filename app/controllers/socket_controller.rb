@@ -47,7 +47,7 @@ require "json"
 	               @stocktobuy = Stock.where(:id => @stockidbought).first
 	               
 	               begin
-		               @success = Stock.buy_stuff(@stockidbought, @stocktobuy, @numofstock.to_f, current_user)
+		               @success = Stock.buy_stuff(@stocktobuy, @numofstock.to_f, current_user)
 		               if(@success) then
 		               		flash[:notice] = @success
 		               		flash[:error] = nil
@@ -346,10 +346,11 @@ require "json"
  
 			if @type == 'bank' && !data[:num_of_stock].blank?
 				@stockid = data[:type_stock].split("_")[1]
+				@stock = Stock.where(:id => @stockid).first
 				@numofstock_to_mortgage = data[:num_of_stock]
 				@success = ""
 				begin
-					@success = Bank.mortgage_to_bank @stockid, @numofstock_to_mortgage, current_user
+					@success = Bank.mortgage_to_bank @stock, @numofstock_to_mortgage, current_user
 					flash[:notice] = @success
 					flash[:error] = nil
 				rescue => msg

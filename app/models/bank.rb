@@ -3,12 +3,19 @@ class Bank < ActiveRecord::Base
     belongs_to :stocks
 	has_many :users
 
-	def self.mortgage_to_bank(stockid, num_of_stock, cur_user)
-		@stockid = stockid
+	def self.mortgage_to_bank(stock, num_of_stock, cur_user)
+		@stockid = stock.id
 		@numofstock_to_mortgage = num_of_stock
 		@success = "nyo"
 		
 		@check_stock = Stock.joins(:stock_useds).select("stocks.*,sum(stock_useds.numofstock) as totalstock").where('stock_useds.user_id' => cur_user.id,'stocks.id' => @stockid ).group("stock_id").first
+		
+		if @check_stock.nil?
+			stockname = stock.stockname
+			@error = "You don't own any stocks of #{stockname}"
+			Notification.create(:user_id => cur_user.id, :notification => @error, :seen => 1, :notice_type => 2)
+			raise @error
+		end
         
 		if @check_stock.totalstock.to_f >= @numofstock_to_mortgage.to_f and @numofstock_to_mortgage.to_f>0
 			@user_cash_inhand = User.find(cur_user.id)
