@@ -112,7 +112,7 @@ ActiveRecord::Schema.define(version: 20150223112939) do
     t.integer  "status"
     t.string   "username"
     t.decimal  "cash",                   precision: 8, scale: 3, default: 10000.0, null: false
-    t.decimal  "total",                  precision: 8, scale: 3
+    t.decimal  "total",                  precision: 8, scale: 3, default: 10000.0, null: false
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, using: :btree
