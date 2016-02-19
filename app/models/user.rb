@@ -18,8 +18,8 @@ class User < ActiveRecord::Base
 #######################################CHECK Time conflictssss...... and write Publish functions for notified user....................................#################
 #######################################FAILED u r buying and selling to the same person #########################################################################   
     def self.comparator(mode)
-    	Resque.enqueue(BidsAsks)
-    	return
+    	#Resque.enqueue(BidsAsks)
+    	#return
          @offset_buy_count = 0
          @offset_sell_count = 0
          @Buy_table  = Buy.uniq.pluck(:stock_id) 
